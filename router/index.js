@@ -1,6 +1,8 @@
 /**
  * Created by Flowers博爵 on 2018/10/31.
  */
+//引入第三方中间件 来获取cookie
+const cookieParser=require('cookie-parser');
 //引入express模块
 const express=require('express');
 //引入模型对象
@@ -13,6 +15,8 @@ const Router=express.Router;
 const router=new Router();
 //解析请求体数据,将请求体数据挂载到req.body中
 router.use(express.urlencoded({extended:true}));
+//解析cookie
+router.use(cookieParser())
 //登录
 router.post('/login',async(req,res)=>{
  //收集用户信息
@@ -29,6 +33,8 @@ router.post('/login',async(req,res)=>{
   try{
     const data=await Users.findOne({username,password:md5(password)});
     if(data){
+      //返回cookie
+      res.cookie('userid',data.id,{maxAge:1000*3600*24*7})
       console.log(data);
       res.json(  {
         code: 0,
@@ -114,6 +120,7 @@ router.post('/register',async(req,res)=>{
       }else{
         const data=await Users.create({username,password:md5(password),type});
         //返回成功的响应
+        res.cookie('userid',data.id,{maxAge:1000*3600*24*7})
         res.json({
           code: 0,
           data: {
@@ -133,5 +140,39 @@ router.post('/register',async(req,res)=>{
     }
     
 })
+
+
+// 更新用户信息的路由
+router.post('/update', (req, res) => {
+  // 从请求的cookie得到userid
+  const userid = req.cookies.userid
+  // 如果不存在, 直接返回一个提示信息
+  if (!userid) {
+    return res.json({code: 1, msg: '请先登陆'})
+  }
+  // 存在, 根据userid更新对应的user文档数据
+  // 得到提交的用户数据
+  const user = req.body // 没有_id
+  Users.findByIdAndUpdate({_id: userid}, user)
+    .then(oldUser => {
+      if (!oldUser) {
+        // 通知浏览器删除userid cookie
+        res.clearCookie('userid')
+        // 返回返回一个提示信息
+        res.json({code: 1, msg: '请先登陆'})
+      } else {
+        // 准备一个返回的user数据对象
+        const {_id, username, type} = oldUser;
+        const data = Object.assign({_id, username, type}, user);
+        // 返回
+        res.json({code: 0, data})
+      }
+    })
+    .catch(error => {
+      // console.error('登陆异常', error)
+      res.json({code: 3, msg: '网络不稳定，请刷新重试'})
+    })
+})
+
 //暴露出去
 module.exports=router;

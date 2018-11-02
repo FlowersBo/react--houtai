@@ -4,12 +4,13 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start":"nodemon app.js"
+    "start": "nodemon app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "blueimp-md5": "^2.10.0",
+    "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "mongoose": "^5.3.8"
   }
