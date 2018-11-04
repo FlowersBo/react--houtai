@@ -19,7 +19,12 @@ const mongoose=require('mongoose');
    type:{
      type:String,
      required:true
-   }
+   },
+   header: String, // 头像名称
+   info: String, // 职位简介
+   post: String, // 职位名称
+   company: String, // 公司名称
+   salary: String // 工资
  })
 //创建模型对象
  const Users=mongoose.model('User',usersSchema);
