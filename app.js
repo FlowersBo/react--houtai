@@ -9,6 +9,13 @@ const db=require('./db');
 const router=require('./router');
 //创建app应用对象
 const app=express();
+const http = require('http');
+const server = http.createServer(app);
+require('./socketIO')(server);
+//处理聊天消息
+server.listen(5000, () => {
+  console.log('服务器启动成功, 请访问: http://localhost:5000')
+});
 (async()=>{
   await db;
   //应用路由器

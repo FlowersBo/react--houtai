@@ -7,6 +7,7 @@ const cookieParser=require('cookie-parser');
 const express=require('express');
 //引入模型对象
 const Users=require('../moduls/users');
+const Messages=require('../moduls/messages')
 //引入md5
 const md5=require('blueimp-md5');
 //获取Router
@@ -207,7 +208,36 @@ router.get('/userlist', (req, res) => {
     })
 })
 
+//获取当前用户数据列表
 
+router.get('/msglist', async (req, res) => {
+  //获取cookie中userid
+  const {userid} = req.cookies;
+  if (!userid) {
+    return res.json({code: 1, msg: '请先登录'});
+  }
+  try {
+    //找所有和当前用户相关聊天信息
+    const chatMsgs = await Messages.find({$or: [{from: userid}, {to: userid}]}, {__v: 0});
+    
+    //找所有用户头像和id
+    const result = await Users.find();
+    let users = {};
+    
+    result.forEach(item => {
+      users[item._id] = {
+        username: item.username,
+        header: item.header
+      }
+    })
+    //返回响应
+    res.json({code: 0, data: {chatMsgs, users}});
+  } catch (e) {
+    res.json({"code": 3,
+      "msg": "网络不稳定，请重新试试~"});
+  }
+  
+})
 
 //暴露出去
 module.exports=router;
