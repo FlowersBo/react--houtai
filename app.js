@@ -9,6 +9,7 @@ const db=require('./db');
 const router=require('./router');
 //创建app应用对象
 const app=express();
+app.use(express.static('public'))
 const http = require('http');
 const server = http.createServer(app);
 require('./socketIO')(server);
